@@ -1,0 +1,8 @@
+## Interface: 11200
+## Title: AZS Stats HUD
+## Notes: Standalone Azeroth Survivors run and character statistics panel.
+## Author: Local addon
+## Version: 0.3.0
+## SavedVariables: AZSStatsHUDDB
+
+StatsHUD.lua
