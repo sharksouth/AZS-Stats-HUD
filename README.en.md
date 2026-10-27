@@ -10,7 +10,7 @@ A standalone stats panel for Azeroth Survivors that displays character and adven
 - Drag the panel to move it, or drag its bottom-right corner to adjust width and height independently without changing text size. The panel cannot be made shorter than its contents.
 - Saves position, scale, visibility, and lock settings.
 - Lock the panel to allow mouse clicks to pass through it.
-- Automatically select Chinese or English based on the client locale, with a manual override.
+- Defaults to Chinese; switch to English manually or try automatic client-locale detection.
 
 ## Installation
 
