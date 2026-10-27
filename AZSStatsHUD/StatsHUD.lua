@@ -13,27 +13,27 @@ local backdrop = {
     insets = { left = 3, right = 3, top = 3, bottom = 3 }
 }
 local primary = {
-    { "����ֵ", "hp", "number0" }, { "�˺�", "dmg", "delta" },
-    { "����", "cd", "haste" }, { "����", "crit", "percent1" },
-    { "�����˺�", "cm", "percent0" }, { "����", "arm", "percent0" },
-    { "��Χ", "area", "delta" }, { "Ŀ����", "cnt", "signedNumber" },
-    { "����", "echo", "percent0" }, { "�ٶ�", "spd", "delta" },
-    { "�ظ�", "reg", "number1" }, { "ʰȡ", "pick", "yards" }
+    { "生命值", "hp", "number0" }, { "伤害", "dmg", "delta" },
+    { "急速", "cd", "haste" }, { "暴击", "crit", "percent1" },
+    { "暴击伤害", "cm", "percent0" }, { "护甲", "arm", "percent0" },
+    { "范围", "area", "delta" }, { "目标数", "cnt", "signedNumber" },
+    { "回响", "echo", "percent0" }, { "速度", "spd", "delta" },
+    { "回复", "reg", "number1" }, { "拾取", "pick", "yards" }
 }
 local adventure = {
-    { "����͵ȡ", "lch", "percent1" }, { "��ɱ����", "heal", "number0" },
-    { "����", "thn", "percent0" }, { "������", "liv", "number0" },
-    { "����ֵ", "xp", "delta" }, { "���", "gold", "delta" },
-    { "����", "luck", "signedPercent" }, { "����ǿ��", "bp", "signedPercent" },
-    { "�����˺�����", "dots", "number0" }, { "�����˺�����", "doth", "signedPercent" },
-    { "�Ծ�Ӣ�˺�", "big", "signedPercent", true }, { "նɱ�˺�", "exe", "signedPercent", true },
-    { "���ܿ��˺�", "cc", "signedPercent", true }, { "�Գ����˺�Ŀ��", "dotd", "signedPercent", true },
-    { "����ʱ�˺�", "shd", "signedPercent", true }, { "��ս�˺�", "auto", "signedPercent", true },
-    { "�����˺�", "pet", "signedPercent", true }
+    { "生命偷取", "lch", "percent1" }, { "击杀治疗", "heal", "number0" },
+    { "荆棘", "thn", "percent0" }, { "生命数", "liv", "number0" },
+    { "经验值", "xp", "delta" }, { "金币", "gold", "delta" },
+    { "幸运", "luck", "signedPercent" }, { "增益强度", "bp", "signedPercent" },
+    { "持续伤害层数", "dots", "number0" }, { "持续伤害急速", "doth", "signedPercent" },
+    { "对精英伤害", "big", "signedPercent", true }, { "斩杀伤害", "exe", "signedPercent", true },
+    { "对受控伤害", "cc", "signedPercent", true }, { "对持续伤害目标", "dotd", "signedPercent", true },
+    { "护盾时伤害", "shd", "signedPercent", true }, { "近战伤害", "auto", "signedPercent", true },
+    { "宠物伤害", "pet", "signedPercent", true }
 }
 HUD.primaryDefinitions, HUD.adventureDefinitions = primary, adventure
 local function say(message)
-    if DEFAULT_CHAT_FRAME then DEFAULT_CHAT_FRAME:AddMessage("|cff65c9ff������壺|r " .. tostring(message)) end
+    if DEFAULT_CHAT_FRAME then DEFAULT_CHAT_FRAME:AddMessage("|cff65c9ff属性面板：|r " .. tostring(message)) end
 end
 local function config()
     if type(AZSStatsHUDDB) ~= "table" then AZSStatsHUDDB = {} end
@@ -58,7 +58,7 @@ function HUD:Format(value, formatType)
     if formatType == "percent1" then return string.format("%.1f%%", n * 100) end
     if formatType == "number1" then return string.format("%.1f", n) end
     if formatType == "signedNumber" then return string.format("%+.0f", n) end
-    if formatType == "yards" then return string.format("%.0f��", n) end
+    if formatType == "yards" then return string.format("%.0f码", n) end
     return string.format("%.0f", n)
 end
 
@@ -119,17 +119,17 @@ end)
 grip:SetScript("OnMouseUp", function() dragX = nil end)
 grip:SetScript("OnHide", function() dragX = nil end)
 local title = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-title:SetPoint("TOPLEFT", frame, "TOPLEFT", 11, -9); title:SetText("��ɫ����")
+title:SetPoint("TOPLEFT", frame, "TOPLEFT", 11, -9); title:SetText("角色属性")
 local hint = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
 hint:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -11, -10)
 hint:SetTextColor(0.62, 0.68, 0.72); hint:SetText("/ast")
 local waiting = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
 waiting:SetPoint("TOPLEFT", frame, "TOPLEFT", 12, -35)
 waiting:SetWidth(width - 24); waiting:SetJustifyH("LEFT")
-waiting:SetText("�ȴ���Ϸ�������ݡ���")
+waiting:SetText("等待游戏属性数据……")
 waiting:SetTextColor(0.72, 0.74, 0.77)
 local section = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-section:SetText("ð������")
+section:SetText("冒险属性")
 local divider = frame:CreateTexture(nil, "ARTWORK")
 divider:SetTexture("Interface\\Buttons\\WHITE8X8")
 divider:SetVertexColor(0.35, 0.42, 0.48, 0.7)
@@ -215,7 +215,7 @@ local function initialize()
     if db.visible then frame:Show() else frame:Hide() end
     if type(AZS_STATS) == "table" then HUD.lastStats = AZS_STATS end
     HUD:Render(HUD.lastStats)
-    say("�Ѽ��أ��϶�����ƶ������� /ast �鿴���á�")
+    say("已加载；拖动面板移动，输入 /ast 查看设置。")
 end
 
 local driver = CreateFrame("Frame", "AZSStatsHUDDriver", UIParent)
@@ -252,19 +252,19 @@ SlashCmdList["AZSSTATSHUD"] = function(message)
         if db.visible then frame:Show() else frame:Hide() end
     elseif cmd == "show" then db.visible = true; frame:Show()
     elseif cmd == "hide" then db.visible = false; frame:Hide()
-    elseif cmd == "lock" then db.locked = true; frame:EnableMouse(false); grip:Hide(); say("�����������ɴ�����/ast unlock ������")
-    elseif cmd == "unlock" then db.locked = false; frame:EnableMouse(true); grip:Show(); say("�ѽ��������϶��������½ǵ������ߡ�")
+    elseif cmd == "lock" then db.locked = true; frame:EnableMouse(false); grip:Hide(); say("已锁定，鼠标可穿过；/ast unlock 解锁。")
+    elseif cmd == "unlock" then db.locked = false; frame:EnableMouse(true); grip:Show(); say("已解锁，可拖动面板或右下角调整宽高。")
     elseif cmd == "scale" then
         local n = tonumber(value)
-        if n and n >= 0.6 and n <= 1.6 then db.scale = n; frame:SetScale(n); say("��������Ϊ " .. n)
-        else say("�÷���/ast scale 0.6 �� 1.6������ /ast scale 0.8") end
+        if n and n >= 0.6 and n <= 1.6 then db.scale = n; frame:SetScale(n); say("缩放已设为 " .. n)
+        else say("用法：/ast scale 0.6 到 1.6，例如 /ast scale 0.8") end
     elseif cmd == "reset" then
         db.position = nil; db.scale = 1; db.width = 338; db.height = nil; db.locked = false; db.visible = true
         frame:ClearAllPoints(); frame:SetPoint("TOPLEFT", UIParent, "TOPLEFT", 24, -155)
-        frame:SetScale(1); frame:EnableMouse(true); grip:Show(); frame:Show(); HUD:Render(HUD.lastStats); say("�ѻָ�Ĭ��λ�úʹ�С��")
+        frame:SetScale(1); frame:EnableMouse(true); grip:Show(); frame:Show(); HUD:Render(HUD.lastStats); say("已恢复默认位置和大小。")
     elseif cmd == "debug" then
-        say("�汾 " .. HUD.version .. "������=" .. (HUD.lastStats and "���յ�" or "��δ�յ�") .. "���ɼ�=" .. tostring(db.visible))
+        say("版本 " .. HUD.version .. "；数据=" .. (HUD.lastStats and "已收到" or "尚未收到") .. "；可见=" .. tostring(db.visible))
     else
-        say("/ast ��ʾ�����أ�/ast lock ������/ast unlock ������/ast scale 0.8 ���ţ�/ast reset ��λ��")
+        say("/ast 显示或隐藏；/ast lock 锁定；/ast unlock 解锁；/ast scale 0.8 缩放；/ast reset 复位。")
     end
 end
