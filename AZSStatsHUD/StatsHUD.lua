@@ -1,6 +1,6 @@
 -- Standalone, read-only display of the game's AZS statistics.
 -- Uses the old 1.12 event model and never depends on a global _G table.
-AZSStatsHUD = { version = "0.3.0", rows = {}, lastStats = nil }
+AZSStatsHUD = { version = "0.4.0", rows = {}, lastStats = nil, language = "en" }
 local HUD = AZSStatsHUD
 local floor, max, min = math.floor, math.max, math.min
 local width, rowHeight = 338, 19
@@ -32,8 +32,36 @@ local adventure = {
     { "宠物伤害", "pet", "signedPercent", true }
 }
 HUD.primaryDefinitions, HUD.adventureDefinitions = primary, adventure
+local english = {
+    ["角色属性"] = "Character Stats", ["冒险属性"] = "Adventure Stats", ["属性面板："] = "Stats HUD: ",
+    ["生命值"] = "Health", ["伤害"] = "Damage", ["急速"] = "Haste", ["暴击"] = "Critical", ["暴击伤害"] = "Crit Damage", ["护甲"] = "Armor",
+    ["范围"] = "Area", ["目标数"] = "Targets", ["回响"] = "Echo", ["速度"] = "Speed", ["回复"] = "Regen", ["拾取"] = "Pickup",
+    ["生命偷取"] = "Life Steal", ["击杀治疗"] = "Kill Healing", ["荆棘"] = "Thorns", ["生命数"] = "Lives", ["经验值"] = "Experience", ["金币"] = "Gold",
+    ["幸运"] = "Luck", ["增益强度"] = "Buff Power", ["持续伤害层数"] = "DoT Stacks", ["持续伤害急速"] = "DoT Haste",
+    ["对精英伤害"] = "Elite Damage", ["斩杀伤害"] = "Execute Damage", ["对受控伤害"] = "CC Damage", ["对持续伤害目标"] = "Damage vs DoT",
+    ["护盾时伤害"] = "Shield Damage", ["近战伤害"] = "Melee Damage", ["宠物伤害"] = "Pet Damage",
+    ["等待游戏属性数据……"] = "Waiting for stats...", ["码"] = " yd",
+    ["已加载；拖动面板移动，输入 /ast 查看设置。"] = "Loaded. Drag to move; enter /ast help for options.",
+    ["已锁定，鼠标可穿过；/ast unlock 解锁。"] = "Locked; mouse clicks pass through. Use /ast unlock to unlock.",
+    ["已解锁，可拖动面板或右下角调整宽高。"] = "Unlocked. Drag the panel to move or the corner to resize.",
+    ["用法：/ast scale 0.6 到 1.6，例如 /ast scale 0.8"] = "Usage: /ast scale 0.6 to 1.6, e.g. /ast scale 0.8",
+    ["已恢复默认位置和大小。"] = "Default position and size restored.",
+    ["/ast 显示或隐藏；/ast lock 锁定；/ast unlock 解锁；/ast scale 0.8 缩放；/ast reset 复位。"] = "/ast: show/hide; lock, unlock, scale 0.8, reset; lang auto/en/zh.",
+    ["缩放已设为 "] = "Scale set to ", ["版本 "] = "Version ", ["；数据="] = "; data=", ["已收到"] = "received", ["尚未收到"] = "waiting", ["；可见="] = "; visible=",
+    ["语言："] = "Language: ", ["用法：/ast lang auto、en 或 zh"] = "Usage: /ast lang auto, en or zh"
+}
+local function tr(s) if HUD.language == "en" then return english[s] or s end return s end
+local function chooseLanguage(db)
+    local mode = db.language
+    if mode == "zh" or mode == "en" then return mode end
+    if type(GetLocale) == "function" then
+        local ok, locale = pcall(GetLocale)
+        if ok and (locale == "zhCN" or locale == "zhTW") then return "zh" end
+    end
+    return "en"
+end
 local function say(message)
-    if DEFAULT_CHAT_FRAME then DEFAULT_CHAT_FRAME:AddMessage("|cff65c9ff属性面板：|r " .. tostring(message)) end
+    if DEFAULT_CHAT_FRAME then DEFAULT_CHAT_FRAME:AddMessage("|cff65c9ff" .. tr("属性面板：") .. "|r " .. tostring(message)) end
 end
 local function config()
     if type(AZSStatsHUDDB) ~= "table" then AZSStatsHUDDB = {} end
@@ -58,7 +86,7 @@ function HUD:Format(value, formatType)
     if formatType == "percent1" then return string.format("%.1f%%", n * 100) end
     if formatType == "number1" then return string.format("%.1f", n) end
     if formatType == "signedNumber" then return string.format("%+.0f", n) end
-    if formatType == "yards" then return string.format("%.0f码", n) end
+    if formatType == "yards" then return string.format("%.0f", n) .. tr("码") end
     return string.format("%.0f", n)
 end
 
@@ -163,7 +191,7 @@ local function placeRows(definitions, stats, y, offset)
             local line = floor((visible - 1) / 2)
             row:ClearAllPoints()
             row:SetPoint("TOPLEFT", frame, "TOPLEFT", inset + col * (columnWidth + gap), -y - line * rowHeight)
-            row.label:SetText(definition[1] .. ":")
+            row.label:SetText(tr(definition[1]) .. ":")
             row.value:SetText(HUD:Format(raw, definition[3]))
             row:Show()
         end
@@ -173,6 +201,7 @@ end
 
 function HUD:Render(stats)
     local db = config()
+    title:SetText(tr("角色属性")); section:SetText(tr("冒险属性")); waiting:SetText(tr("等待游戏属性数据……"))
     width = db.width
     columnWidth = (width - inset * 2 - gap) / 2
     frame:SetWidth(width)
@@ -205,6 +234,7 @@ local function initialize()
     if initialized then return end
     initialized = true
     local db = config()
+    HUD.language = chooseLanguage(db)
     frame:SetScale(db.scale)
     if type(db.position) == "table" and type(db.position[1]) == "string" and type(db.position[2]) == "string" then
         frame:ClearAllPoints()
@@ -215,7 +245,7 @@ local function initialize()
     if db.visible then frame:Show() else frame:Hide() end
     if type(AZS_STATS) == "table" then HUD.lastStats = AZS_STATS end
     HUD:Render(HUD.lastStats)
-    say("已加载；拖动面板移动，输入 /ast 查看设置。")
+    say(tr("已加载；拖动面板移动，输入 /ast 查看设置。"))
 end
 
 local driver = CreateFrame("Frame", "AZSStatsHUDDriver", UIParent)
@@ -252,19 +282,23 @@ SlashCmdList["AZSSTATSHUD"] = function(message)
         if db.visible then frame:Show() else frame:Hide() end
     elseif cmd == "show" then db.visible = true; frame:Show()
     elseif cmd == "hide" then db.visible = false; frame:Hide()
-    elseif cmd == "lock" then db.locked = true; frame:EnableMouse(false); grip:Hide(); say("已锁定，鼠标可穿过；/ast unlock 解锁。")
-    elseif cmd == "unlock" then db.locked = false; frame:EnableMouse(true); grip:Show(); say("已解锁，可拖动面板或右下角调整宽高。")
+    elseif cmd == "lock" then db.locked = true; frame:EnableMouse(false); grip:Hide(); say(tr("已锁定，鼠标可穿过；/ast unlock 解锁。"))
+    elseif cmd == "unlock" then db.locked = false; frame:EnableMouse(true); grip:Show(); say(tr("已解锁，可拖动面板或右下角调整宽高。"))
+    elseif cmd == "lang" then
+        if value == "auto" or value == "en" or value == "zh" then
+            db.language = value; HUD.language = chooseLanguage(db); HUD:Render(HUD.lastStats); say(tr("语言：") .. value)
+        else say(tr("用法：/ast lang auto、en 或 zh")) end
     elseif cmd == "scale" then
         local n = tonumber(value)
-        if n and n >= 0.6 and n <= 1.6 then db.scale = n; frame:SetScale(n); say("缩放已设为 " .. n)
-        else say("用法：/ast scale 0.6 到 1.6，例如 /ast scale 0.8") end
+        if n and n >= 0.6 and n <= 1.6 then db.scale = n; frame:SetScale(n); say(tr("缩放已设为 ") .. n)
+        else say(tr("用法：/ast scale 0.6 到 1.6，例如 /ast scale 0.8")) end
     elseif cmd == "reset" then
         db.position = nil; db.scale = 1; db.width = 338; db.height = nil; db.locked = false; db.visible = true
         frame:ClearAllPoints(); frame:SetPoint("TOPLEFT", UIParent, "TOPLEFT", 24, -155)
-        frame:SetScale(1); frame:EnableMouse(true); grip:Show(); frame:Show(); HUD:Render(HUD.lastStats); say("已恢复默认位置和大小。")
+        frame:SetScale(1); frame:EnableMouse(true); grip:Show(); frame:Show(); HUD:Render(HUD.lastStats); say(tr("已恢复默认位置和大小。"))
     elseif cmd == "debug" then
-        say("版本 " .. HUD.version .. "；数据=" .. (HUD.lastStats and "已收到" or "尚未收到") .. "；可见=" .. tostring(db.visible))
+        say(tr("版本 ") .. HUD.version .. tr("；数据=") .. tr(HUD.lastStats and "已收到" or "尚未收到") .. tr("；可见=") .. tostring(db.visible))
     else
-        say("/ast 显示或隐藏；/ast lock 锁定；/ast unlock 解锁；/ast scale 0.8 缩放；/ast reset 复位。")
+        say(tr("/ast 显示或隐藏；/ast lock 锁定；/ast unlock 解锁；/ast scale 0.8 缩放；/ast reset 复位。"))
     end
 end
