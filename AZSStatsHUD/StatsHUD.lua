@@ -1,6 +1,6 @@
 -- Standalone, read-only display of the game's AZS statistics.
 -- Uses the old 1.12 event model and never depends on a global _G table.
-AZSStatsHUD = { version = "0.4.0", rows = {}, lastStats = nil, language = "en" }
+AZSStatsHUD = { version = "0.4.1", rows = {}, lastStats = nil, language = "zh" }
 local HUD = AZSStatsHUD
 local floor, max, min = math.floor, math.max, math.min
 local width, rowHeight = 338, 19
@@ -52,7 +52,7 @@ local english = {
 }
 local function tr(s) if HUD.language == "en" then return english[s] or s end return s end
 local function chooseLanguage(db)
-    local mode = db.language
+    local mode = db.language or "zh"
     if mode == "zh" or mode == "en" then return mode end
     if type(GetLocale) == "function" then
         local ok, locale = pcall(GetLocale)
